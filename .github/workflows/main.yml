@@ -40,6 +40,10 @@ on:
         description: "Nginx Auth Password"
         required: true
 
+      TEMPLATE_VERSION:
+        description: "FloTorch Template Version (e.g., 2.0.1)"
+        required: true
+        default: "2.0.1"
 
 jobs:
 
@@ -50,12 +54,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Set Environment Variables
+        run: |
+          echo "TEMPLATE_URL=https://flotorch-public.s3.amazonaws.com/${{ inputs.TEMPLATE_VERSION }}/templates/master-template.yaml" >> $GITHUB_ENV
+
       - name: Deploy FloTorch Master Stack
         run: |
           aws cloudformation create-stack \
             --region ${{ inputs.AWS_REGION }} \
             --stack-name flotorch-stack \
-            --template-url https://flotorch-public.s3.amazonaws.com/2.0.1/templates/master-template.yaml \
+            --template-url $TEMPLATE_URL \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
             --parameters \
                 ParameterKey=ProjectName,ParameterValue=${{ inputs.PROJECT_NAME }} \
